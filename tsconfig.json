@@ -1,0 +1,4 @@
+{
+    "extends": "@yutengjing/tsconfig-react",
+    "include": ["src/**/*.ts", "src/**/*.tsx"]
+}

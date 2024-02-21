@@ -1,0 +1,4 @@
+{
+    "extends": "@yutengjing/tsconfig-node",
+    "include": ["./**/*.ts"]
+}

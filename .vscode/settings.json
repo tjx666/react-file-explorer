@@ -1,0 +1,39 @@
+{
+    "search.exclude": {
+        "**/dist": true,
+        "pnpm-lock.yaml": true
+    },
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": "never",
+        "source.addMissingImports": "explicit",
+        "source.fixAll.eslint": "explicit",
+        "source.fixAll.stylelint": "explicit",
+        "source.fixAll.markdownlint": "explicit"
+    },
+    "editor.formatOnSave": true,
+    "[javascript][javascriptreact][typescript][typescriptreact][json][jsonc]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[html][css][less][scss][markdown][xml][yaml][svg][xml]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "typescript.tsdk": "node_modules/typescript/lib",
+
+    // use stylelint instead
+    "css.validate": false,
+    "stylelint.validate": ["css", "scss"],
+
+    // support lint json etc
+    "eslint.validate": [
+        "javascript",
+        "javascriptreact",
+        "typescript",
+        "typescriptreact",
+        "json",
+        "jsonc",
+        "markdown",
+        "yml",
+        "yaml",
+        "html"
+    ]
+}
