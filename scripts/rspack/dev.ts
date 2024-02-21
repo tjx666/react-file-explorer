@@ -6,7 +6,7 @@ import commonConfig from './common.js';
 
 const devConfig = defineConfig({
     mode: 'development',
-    devtool: 'eval-source-map',
+    devtool: 'source-map',
     devServer: {
         port: 3000,
         client: {

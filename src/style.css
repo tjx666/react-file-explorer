@@ -1,0 +1,17 @@
+.app {
+    display: flex;
+
+    .explorer {
+        width: 200px;
+        height: 100vh;
+    }
+
+    main {
+        flex: 1;
+
+        button {
+            display: block;
+            margin: 60px auto;
+        }
+    }
+}

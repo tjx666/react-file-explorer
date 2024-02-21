@@ -1,0 +1,48 @@
+.explorer {
+    $hover-bg: lightgray;
+
+    overflow: hidden scroll;
+    cursor: pointer;
+    user-select: none;
+    background-color: rgba(240, 238, 238);
+
+    ul,
+    li {
+        padding: 0;
+        margin: 0;
+    }
+
+    .folder-item {
+        &__list {
+            padding-left: 12px;
+            border-left: 1px dashed rgba(166, 163, 163, 50%);
+        }
+
+        &__name {
+            &__arrow--expanded {
+                display: inline-block;
+                transform: rotate(90deg);
+            }
+
+            &:hover {
+                background-color: $hover-bg;
+            }
+        }
+
+        &:hover {
+            > .folder-item__list {
+                border-left-color: black;
+            }
+        }
+    }
+
+    .file-item {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+
+        &:hover {
+            background-color: $hover-bg;
+        }
+    }
+}
