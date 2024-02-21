@@ -1,7 +1,8 @@
 {
-    "name": "react-rspack-boilerplate",
+    "name": "react-file-explorer",
     "private": "true",
     "type": "module",
+    "packageManager": "pnpm@8.15.3",
     "eslintConfig": {
         "extends": "@yutengjing/eslint-config-react",
         "rules": {
