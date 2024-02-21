@@ -19,11 +19,12 @@ export default function App() {
         const file = await handle.getFile();
         console.log(file);
         const textFileNameRegexp =
-            /.(?:txt|js|jsx|ts|tsx|astro|vue|svelte|json|yml|yaml|toml|html|css|less|scss|sass|stylus|md|java|c|c\+\+|go|rs)$/i;
+            /.(?:txt|js|cjs|mjs|jsx|ts|cts|mts|tsx|astro|vue|svelte|json|yml|yaml|toml|html|svg|css|less|scss|sass|stylus|md|java|c|c\+\+|go|rs)$/i;
         if (
             file.type.startsWith('text/') ||
             file.name.startsWith('.') ||
-            textFileNameRegexp.test(file.name)
+            textFileNameRegexp.test(file.name) ||
+            new Set(['license', 'readme']).has(file.name.toLowerCase())
         ) {
             setOpenedFileContent(await file.text());
         }
