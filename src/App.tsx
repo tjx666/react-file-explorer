@@ -13,11 +13,18 @@ export default function App() {
     }, []);
 
     const handleClickItem = useCallback(async (handle: Handle) => {
+        console.log(handle);
         if (handle.kind !== 'file') return;
 
         const file = await handle.getFile();
         console.log(file);
-        if (file.type.startsWith('text/')) {
+        const textFileNameRegexp =
+            /.(?:txt|js|jsx|ts|tsx|astro|vue|svelte|json|yml|yaml|toml|html|css|less|scss|sass|stylus|md|java|c|c\+\+|go|rs)$/i;
+        if (
+            file.type.startsWith('text/') ||
+            file.name.startsWith('.') ||
+            textFileNameRegexp.test(file.name)
+        ) {
             setOpenedFileContent(await file.text());
         }
     }, []);
@@ -28,7 +35,13 @@ export default function App() {
                 <ReactFileExplorer directory={rootDir} onClickItem={handleClickItem} />
             ) : null}
             <main>
-                {rootDir ? openedFileContent : <button onClick={openDir}>打开本地文件夹</button>}
+                {rootDir ? (
+                    <pre>
+                        <code>{openedFileContent}</code>
+                    </pre>
+                ) : (
+                    <button onClick={openDir}>打开本地文件夹</button>
+                )}
             </main>
         </div>
     );
