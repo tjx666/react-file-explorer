@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 
 import ReactFileExplorer from './ReactFileExplorer';
 import './style.css';
-import type { Handle } from './ReactFileExplorer/types';
+import type { FsFile, FsNode } from './ReactFileExplorer/model';
 
 export default function App() {
     const [rootDir, setRootDir] = useState<FileSystemDirectoryHandle>();
@@ -12,12 +12,10 @@ export default function App() {
         setRootDir(await showDirectoryPicker());
     }, []);
 
-    const handleClickItem = useCallback(async (handle: Handle) => {
-        console.log(handle);
-        if (handle.kind !== 'file') return;
+    const handleClickItem = useCallback(async (fsNode: FsNode) => {
+        if (fsNode.kind !== 'file') return;
 
-        const file = await handle.getFile();
-        console.log(file);
+        const file = await (fsNode as FsFile).handle.getFile();
         const textFileNameRegexp =
             /.(?:txt|js|cjs|mjs|jsx|ts|cts|mts|tsx|astro|vue|svelte|json|yml|yaml|toml|html|svg|css|less|scss|sass|stylus|md|java|c|c\+\+|go|rs)$/i;
         if (

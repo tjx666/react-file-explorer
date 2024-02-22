@@ -2,76 +2,69 @@ import clsx from 'clsx';
 import { useCallback, useMemo, useRef, useState, type DragEvent } from 'react';
 
 import FileItem from './FileItem';
+import type { FsDir, FsFile, FsNode } from './model';
 import { store } from './store';
-import type { Handle } from './types';
 
 interface FolderItemProps {
-    handle: FileSystemDirectoryHandle;
-    parentHandle?: FileSystemDirectoryHandle;
-    onClick?: (handle: FileSystemDirectoryHandle) => void;
-    onClickItem?: (Handle: Handle) => void;
-    onMoved?: (from: Handle, to: Handle) => void;
+    folder: FsDir;
+    onClick?: (folder: FsDir) => void;
+    /** 点击自身以及子节点 */
+    onClickItem?: (fsNode: FsNode) => void;
+    onMoved?: (from: FsNode, to: FsNode) => void;
 }
 
-function sortHandles(handles: Handle[]) {
-    return [...handles].sort((a, b) => {
-        if (a.kind === b.kind) return a.name.localeCompare(b.name);
-        return a.kind === 'directory' ? 1 : -1;
-    });
-}
-
-async function loadChildHandles(handle: FileSystemDirectoryHandle) {
-    const children: Handle[] = [];
-
-    // 使用异步迭代器遍历目录
-    for await (const [_, childHandle] of handle.entries()) {
-        // 将每个子句柄添加到数组中
-        children.push(childHandle);
-    }
-    return sortHandles(children);
-}
-
-export default function FolderItem({ handle, onClick, onClickItem, onMoved }: FolderItemProps) {
+export default function FolderItem({ folder, onClick, onClickItem, onMoved }: FolderItemProps) {
     const [expanded, setExpanded] = useState(false);
-    const [childrenHandles, setChildrenHandles] = useState<Handle[] | undefined>();
+    const [childFiles, setChildFiles] = useState<FsNode[] | undefined>();
     const dragOverStartRef = useRef(0);
 
+    if (folder.parent === undefined) {
+        // @ts-expect-error ...
+        window.rootFolder = folder;
+    }
+
     const expandFolder = useCallback(async () => {
-        if (childrenHandles === undefined) {
-            setChildrenHandles(await loadChildHandles(handle));
+        if (childFiles === undefined) {
+            setChildFiles(await folder.getFiles());
         }
         setExpanded(true);
-    }, [childrenHandles, handle]);
+    }, [childFiles, folder]);
 
     const handleClickFolder = useCallback(async () => {
-        onClick?.(handle);
-        onClickItem?.(handle);
+        onClick?.(folder);
+        onClickItem?.(folder);
 
         if (expanded) {
             setExpanded(false);
             return;
         }
         await expandFolder();
-    }, [expandFolder, expanded, handle, onClick, onClickItem]);
+    }, [expandFolder, expanded, folder, onClick, onClickItem]);
 
     const handleClickItem = useCallback(
-        (handle: Handle) => {
+        (handle: FsNode) => {
             onClickItem?.(handle);
         },
         [onClickItem],
+    );
+
+    const handleClickFile = useCallback(
+        (file: FsFile) => {
+            handleClickItem(file);
+        },
+        [handleClickItem],
     );
 
     const handleDragStart = useCallback(
         (e: DragEvent) => {
             e.stopPropagation();
 
-            store.draggingHandle = handle;
-            console.log(store.draggingHandle);
-            store.subscribeDropped((to) => {
-                onMoved?.(handle, to);
-            });
+            store.draggingNode = folder;
+            store.onDropped = (to) => {
+                onMoved?.(folder, to);
+            };
         },
-        [handle, onMoved],
+        [folder, onMoved],
     );
 
     const handleDragEnter = useCallback(async () => {
@@ -93,63 +86,84 @@ export default function FolderItem({ handle, onClick, onClickItem, onMoved }: Fo
     );
 
     const handleDrop = useCallback(
-        (e: DragEvent) => {
+        async (e: DragEvent) => {
             e.stopPropagation();
 
-            if (store.draggingHandle) {
-                const isSameName = childrenHandles!.some(
-                    (h) => h.name === store.draggingHandle!.name,
-                );
+            if (store.draggingNode) {
+                const from = store.draggingNode;
+                const toDir = folder;
 
-                if (!isSameName) {
-                    setChildrenHandles(sortHandles([...childrenHandles!, store.draggingHandle]));
+                console.log(`拖拽 ${from.name} 到 ${toDir.name}`);
+
+                // 文件名已存在
+                const isSameName = childFiles!.some((h) => h.name === store.draggingNode!.name);
+
+                // 父文件夹移动到子文件夹
+                let isMoveToChild = false;
+                if (toDir.kind === 'directory') {
+                    let currentNode: FsDir | undefined = toDir as FsDir;
+                    while (currentNode !== undefined) {
+                        if (currentNode === from) {
+                            isMoveToChild = true;
+                            break;
+                        }
+                        currentNode = currentNode.parent;
+                    }
                 }
-                store.publishDropped(handle);
+
+                // 移动自己所在的文件夹
+                const isMoveToSelfDir = toDir === from.parent;
+
+                const shouldNotMove = isSameName || isMoveToChild || isMoveToSelfDir;
+                if (!shouldNotMove) {
+                    // 先删除
+                    store.onDropped!(folder);
+
+                    // 后添加
+                    toDir.add(from);
+                    setChildFiles(await toDir.getFiles());
+                }
             }
         },
-        [childrenHandles, handle],
+        [childFiles, folder],
     );
 
     const handledMoved = useCallback(
-        (from: Handle, to: Handle) => {
-            console.log(from, to);
+        async (from: FsNode, to: FsNode) => {
             if (from === to) return;
 
-            // FIXME: 父文件夹移动到子文件夹
-            // FIXME: 移动到同级文件上
-            const newChildrenHandles = [...childrenHandles!];
-            newChildrenHandles.splice(newChildrenHandles.indexOf(from), 1);
-            setChildrenHandles(sortHandles(newChildrenHandles));
+            // eslint-disable-next-line unicorn/prefer-dom-node-remove
+            await from.parent?.removeChild(from);
+            setChildFiles([...(await folder.getFiles())]);
         },
-        [childrenHandles],
+        [folder],
     );
 
     const renderFiles = useCallback(() => {
-        if (childrenHandles === undefined) return;
+        if (childFiles === undefined) return;
 
         return (
             <ul className="folder-item__list">
-                {childrenHandles.map((childHandle) => {
-                    return childHandle.kind === 'directory' ? (
+                {childFiles.map((childFsNode) => {
+                    return childFsNode.kind === 'directory' ? (
                         <FolderItem
-                            key={childHandle.name}
-                            handle={childHandle}
+                            key={childFsNode.name}
+                            folder={childFsNode as FsDir}
                             onClickItem={handleClickItem}
                             onMoved={handledMoved}
                         />
                     ) : (
                         <FileItem
-                            key={childHandle.name}
-                            handle={childHandle}
-                            parentHandle={handle}
-                            onClickItem={handleClickItem}
+                            key={childFsNode.name}
+                            file={childFsNode as FsFile}
+                            onClick={handleClickFile}
                             onMoved={handledMoved}
                         />
                     );
                 })}
             </ul>
         );
-    }, [childrenHandles, handle, handleClickItem, handledMoved]);
+    }, [childFiles, handleClickFile, handleClickItem, handledMoved]);
 
     const arrowClassName = useMemo(() => {
         const prefix = `folder-item__name__arrow`;
@@ -167,7 +181,7 @@ export default function FolderItem({ handle, onClick, onClickItem, onMoved }: Fo
         >
             <div className="folder-item__name" onClick={handleClickFolder}>
                 <span className={arrowClassName}>&gt;</span>
-                &nbsp;{handle.name}
+                &nbsp;{folder.name}
             </div>
             {expanded ? renderFiles() : null}
         </div>

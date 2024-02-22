@@ -3,26 +3,26 @@ import { type CSSProperties, useCallback } from 'react';
 
 import FolderItem from './FolderItem';
 import './style.scss';
-import type { Handle } from './types';
+import { FsDir, type FsNode } from './model';
 
 interface ReactFileExplorerProps {
     className?: string;
     style?: CSSProperties;
     directory: FileSystemDirectoryHandle;
-    onClickItem?: (handle: Handle) => void;
+    onClickItem?: (handle: FsNode) => void;
 }
 
 export default function ReactFileExplorer(props: ReactFileExplorerProps) {
     const handleClickItem = useCallback(
-        (handle: Handle) => {
-            props.onClickItem?.(handle);
+        (fsNode: FsNode) => {
+            props.onClickItem?.(fsNode);
         },
         [props],
     );
 
     return (
         <nav className={clsx('explorer', props.className)} style={props.style}>
-            <FolderItem handle={props.directory} onClickItem={handleClickItem} />
+            <FolderItem folder={new FsDir(props.directory)} onClickItem={handleClickItem} />
         </nav>
     );
 }

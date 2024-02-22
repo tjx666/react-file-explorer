@@ -1,38 +1,46 @@
 import type { DragEvent } from 'react';
 import { useCallback } from 'react';
 
+import type { FsFile, FsNode } from './model';
 import { store } from './store';
-import type { Handle } from './types';
 
 interface FileItemProps {
-    handle: FileSystemFileHandle;
-    parentHandle: FileSystemDirectoryHandle;
-    onClick?: (handle: FileSystemFileHandle) => void;
-    onClickItem: (Handle: Handle) => void;
-    onMoved: (from: Handle, to: Handle) => void;
+    file: FsFile;
+    onClick?: (handle: FsFile) => void;
+    onMoved: (from: FsNode, to: FsNode) => void;
 }
 
-export default function FileItem({ handle, onClick, onClickItem, onMoved }: FileItemProps) {
+export default function FileItem({ file, onClick, onMoved }: FileItemProps) {
     const handleClick = useCallback(() => {
-        onClick?.(handle);
-        onClickItem?.(handle);
-    }, [handle, onClick, onClickItem]);
+        onClick?.(file);
+    }, [file, onClick]);
 
     const handleDragStart = useCallback(
         (e: DragEvent) => {
             e.stopPropagation();
 
-            store.draggingHandle = handle;
-            store.subscribeDropped((to) => {
-                onMoved(handle, to);
-            });
+            store.draggingNode = file;
+            store.onDropped = (to: FsNode) => onMoved(file, to);
         },
-        [handle, onMoved],
+        [file, onMoved],
     );
 
+    const handleDragEnd = useCallback((e: DragEvent) => {
+        e.stopPropagation();
+
+        store.draggingNode = undefined;
+        store.onDropped = undefined;
+    }, []);
+
     return (
-        <div className="file-item" draggable onClick={handleClick} onDragStart={handleDragStart}>
-            {handle.name}
+        <div
+            className="file-item"
+            draggable
+            onClick={handleClick}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+        >
+            {file.name}
         </div>
     );
 }
