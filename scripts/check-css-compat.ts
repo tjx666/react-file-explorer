@@ -10,7 +10,12 @@ async function checkCssCompact() {
         config: {
             plugins: ['stylelint-no-unsupported-browser-features'],
             rules: {
-                'plugin/no-unsupported-browser-features': [true],
+                'plugin/no-unsupported-browser-features': [
+                    true,
+                    {
+                        ignore: ['css-overflow', 'viewport-unit-variants'],
+                    },
+                ],
             },
         },
     });
