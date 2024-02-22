@@ -1,4 +1,5 @@
-import { useCallback, useState } from 'react';
+import type { MouseEvent as ReactMouseEvent } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import ReactFileExplorer from './ReactFileExplorer';
 import type { FsFile, FsNode } from './ReactFileExplorer/model';
@@ -8,6 +9,7 @@ import './style.scss';
 export default function App() {
     const [rootDir, setRootDir] = useState<FileSystemDirectoryHandle>();
     const [openedFileContent, setOpenedFileContent] = useState<string>('未打开文件');
+    const [explorerWidth, setExplorerWidth] = useState(260);
 
     const openDir = useCallback(async () => {
         setRootDir(await showDirectoryPicker());
@@ -29,11 +31,54 @@ export default function App() {
         }
     }, []);
 
+    const isResizingRef = useRef(false);
+    const lastXRef = useRef(0);
+    const handleMouseDown = useCallback((e: ReactMouseEvent<HTMLDivElement>) => {
+        isResizingRef.current = true;
+        lastXRef.current = e.pageX;
+        document.body.style.setProperty('cursor', 'ew-resize', 'important');
+        const explorer = document.querySelector('.explorer') as HTMLDivElement;
+        explorer.style.setProperty('cursor', 'ew-resize');
+    }, []);
+
+    useEffect(() => {
+        const handleMouseMove = (e: MouseEvent) => {
+            if (isResizingRef.current) {
+                console.log(e.pageX, lastXRef.current);
+                const offsetX = e.pageX - lastXRef.current;
+                lastXRef.current = e.pageX;
+                setExplorerWidth(explorerWidth + offsetX);
+            }
+        };
+        const handleMouseUp = () => {
+            if (isResizingRef.current) {
+                isResizingRef.current = false;
+                document.body.style.removeProperty('cursor');
+                const explorer = document.querySelector('.explorer') as HTMLDivElement;
+                explorer.style.removeProperty('cursor');
+            }
+        };
+
+        window.addEventListener('mousemove', handleMouseMove);
+        window.addEventListener('mouseup', handleMouseUp);
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, [explorerWidth]);
+
     return (
         <div className="app">
             {rootDir ? (
-                <ReactFileExplorer directory={rootDir} onClickItem={handleClickItem} />
+                <ReactFileExplorer
+                    style={{
+                        width: `${explorerWidth}px`,
+                    }}
+                    directory={rootDir}
+                    onClickItem={handleClickItem}
+                />
             ) : null}
+            <div className="resizer" onMouseDown={handleMouseDown}></div>
             <main>
                 {rootDir ? (
                     <pre>

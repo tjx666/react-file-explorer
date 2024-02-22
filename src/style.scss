@@ -8,12 +8,26 @@ nav {
 
 .app {
     display: flex;
+    align-items: center;
 
     .explorer {
         box-sizing: border-box;
-        width: 260px;
         height: 100dvh;
         background-color: rgb(244, 244, 244);
+    }
+
+    .resizer {
+        width: 4px;
+        height: calc(100dvh - 8px);
+        border-radius: 4px;
+        opacity: 0;
+        transition: opacity 0.2s ease-in;
+
+        &:hover {
+            cursor: ew-resize;
+            background-color: rgb(150, 150, 150);
+            opacity: 1;
+        }
     }
 
     main {
