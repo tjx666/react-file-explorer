@@ -1,8 +1,9 @@
 import { useCallback, useState } from 'react';
 
 import ReactFileExplorer from './ReactFileExplorer';
-import './style.css';
 import type { FsFile, FsNode } from './ReactFileExplorer/model';
+
+import './style.scss';
 
 export default function App() {
     const [rootDir, setRootDir] = useState<FileSystemDirectoryHandle>();

@@ -3,6 +3,7 @@ import { useCallback } from 'react';
 
 import type { FsFile, FsNode } from './model';
 import { store } from './store';
+import { getIndentWidth } from './utils';
 
 interface FileItemProps {
     file: FsFile;
@@ -34,7 +35,10 @@ export default function FileItem({ file, onClick, onMoved }: FileItemProps) {
 
     return (
         <div
-            className="file-item"
+            className="file-item fs-item__name"
+            style={{
+                paddingLeft: getIndentWidth(file.level),
+            }}
             draggable
             onClick={handleClick}
             onDragStart={handleDragStart}

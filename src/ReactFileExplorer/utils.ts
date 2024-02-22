@@ -12,3 +12,7 @@ export async function loadChildHandles(handle: FileSystemDirectoryHandle) {
     }
     return sortHandles(children);
 }
+
+export function getIndentWidth(itemLevel: number) {
+    return `${itemLevel * 16}px`;
+}

@@ -13,6 +13,7 @@ nav {
         box-sizing: border-box;
         width: 260px;
         height: 100dvh;
+        background-color: rgb(244, 244, 244);
     }
 
     main {
@@ -21,6 +22,7 @@ nav {
         height: 100dvh;
         padding: 2px 10px;
         overflow: scroll;
+        background-color: white;
 
         button {
             display: block;

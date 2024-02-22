@@ -4,6 +4,7 @@ import { useCallback, useMemo, useRef, useState, type DragEvent } from 'react';
 import FileItem from './FileItem';
 import type { FsDir, FsFile, FsNode } from './model';
 import { store } from './store';
+import { getIndentWidth } from './utils';
 
 interface FolderItemProps {
     folder: FsDir;
@@ -139,11 +140,18 @@ export default function FolderItem({ folder, onClick, onClickItem, onMoved }: Fo
         [folder],
     );
 
+    const indentWidth = getIndentWidth(folder.level);
     const renderFiles = useCallback(() => {
         if (childFiles === undefined) return;
 
         return (
-            <ul className="folder-item__list">
+            <div className="folder-item__list">
+                <div
+                    className="folder-item__list__guide"
+                    style={{
+                        left: indentWidth,
+                    }}
+                ></div>
                 {childFiles.map((childFsNode) => {
                     return childFsNode.kind === 'directory' ? (
                         <FolderItem
@@ -161,9 +169,9 @@ export default function FolderItem({ folder, onClick, onClickItem, onMoved }: Fo
                         />
                     );
                 })}
-            </ul>
+            </div>
         );
-    }, [childFiles, handleClickFile, handleClickItem, handledMoved]);
+    }, [childFiles, handleClickFile, handleClickItem, handledMoved, indentWidth]);
 
     const arrowClassName = useMemo(() => {
         const prefix = `folder-item__name__arrow`;
@@ -179,7 +187,13 @@ export default function FolderItem({ folder, onClick, onClickItem, onMoved }: Fo
             onDragOver={handleDragOver}
             onDrop={handleDrop}
         >
-            <div className="folder-item__name" onClick={handleClickFolder}>
+            <div
+                className="folder-item__name fs-item__name"
+                style={{
+                    paddingLeft: indentWidth,
+                }}
+                onClick={handleClickFolder}
+            >
                 <span className={arrowClassName}>&gt;</span>
                 &nbsp;{folder.name}
             </div>

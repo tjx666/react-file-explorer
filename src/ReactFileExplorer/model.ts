@@ -11,6 +11,10 @@ export class FsNode {
         return this.parent ? `${this.parent.path}/${this.name}` : `/${this.name}`;
     }
 
+    public get level(): number {
+        return this.parent ? this.parent.level + 1 : 0;
+    }
+
     constructor(handle: FileSystemHandle, parent?: FsDir) {
         this.parent = parent;
         this.handle = handle;

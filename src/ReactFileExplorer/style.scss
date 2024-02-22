@@ -1,11 +1,10 @@
 .explorer {
-    $hover-bg: lightgray;
+    $hover-bg: rgb(226, 226, 226);
 
     padding: 10px;
     overflow: hidden scroll;
     cursor: pointer;
     user-select: none;
-    background-color: rgba(240, 238, 238);
 
     ul,
     li {
@@ -13,10 +12,20 @@
         margin: 0;
     }
 
+    .fs-item__name:hover {
+        background-color: $hover-bg;
+    }
+
     .folder-item {
         &__list {
-            padding-left: 12px;
-            border-left: 1px dashed rgba(166, 163, 163, 50%);
+            position: relative;
+
+            &__guide {
+                position: absolute;
+                width: 0;
+                height: 100%;
+                border-left: 1px dashed rgba(166, 163, 163, 50%);
+            }
         }
 
         &__name {
@@ -24,14 +33,10 @@
                 display: inline-block;
                 transform: rotate(90deg);
             }
-
-            &:hover {
-                background-color: $hover-bg;
-            }
         }
 
         &:hover {
-            > .folder-item__list {
+            > .folder-item__list > .folder-item__list__guide {
                 border-left-color: black;
             }
         }
@@ -41,9 +46,5 @@
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-
-        &:hover {
-            background-color: $hover-bg;
-        }
     }
 }
