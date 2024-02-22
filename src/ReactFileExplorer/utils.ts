@@ -1,7 +1,7 @@
 export function sortHandles<T extends Pick<FileSystemHandle, 'kind' | 'name'>>(handles: T[]): T[] {
     return [...handles].sort((a, b) => {
         if (a.kind === b.kind) return a.name.localeCompare(b.name);
-        return a.kind === 'directory' ? 1 : -1;
+        return a.kind === 'directory' ? -1 : 1;
     });
 }
 
