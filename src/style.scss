@@ -1,7 +1,8 @@
 html,
 body,
 main,
-nav {
+nav,
+p {
     padding: 0;
     margin: 0;
 }
@@ -34,9 +35,16 @@ nav {
         box-sizing: border-box;
         flex: 1;
         height: 100dvh;
-        padding: 2px 10px;
         overflow: scroll;
         background-color: white;
+
+        .breadcrumbs {
+            background: rgba(240, 240, 240);
+        }
+
+        pre {
+            padding: 0 10px;
+        }
 
         button {
             display: block;
