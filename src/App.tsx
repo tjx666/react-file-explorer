@@ -1,6 +1,6 @@
-import type { MouseEvent as ReactMouseEvent } from 'react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 
+import Resizer from './components/Resizer';
 import ReactFileExplorer from './ReactFileExplorer';
 import type { FsFile, FsNode } from './ReactFileExplorer/model';
 
@@ -31,41 +31,12 @@ export default function App() {
         }
     }, []);
 
-    const isResizingRef = useRef(false);
-    const lastXRef = useRef(0);
-    const handleMouseDown = useCallback((e: ReactMouseEvent<HTMLDivElement>) => {
-        isResizingRef.current = true;
-        lastXRef.current = e.pageX;
-        document.body.style.setProperty('cursor', 'ew-resize', 'important');
-        const explorer = document.querySelector('.explorer') as HTMLDivElement;
-        explorer.style.setProperty('cursor', 'ew-resize');
-    }, []);
-
-    useEffect(() => {
-        const handleMouseMove = (e: MouseEvent) => {
-            if (isResizingRef.current) {
-                console.log(e.pageX, lastXRef.current);
-                const offsetX = e.pageX - lastXRef.current;
-                lastXRef.current = e.pageX;
-                setExplorerWidth(explorerWidth + offsetX);
-            }
-        };
-        const handleMouseUp = () => {
-            if (isResizingRef.current) {
-                isResizingRef.current = false;
-                document.body.style.removeProperty('cursor');
-                const explorer = document.querySelector('.explorer') as HTMLDivElement;
-                explorer.style.removeProperty('cursor');
-            }
-        };
-
-        window.addEventListener('mousemove', handleMouseMove);
-        window.addEventListener('mouseup', handleMouseUp);
-        return () => {
-            window.removeEventListener('mousemove', handleMouseMove);
-            window.removeEventListener('mouseup', handleMouseUp);
-        };
-    }, [explorerWidth]);
+    const handleResize = useCallback(
+        (offsetX: number) => {
+            setExplorerWidth(explorerWidth + offsetX);
+        },
+        [explorerWidth],
+    );
 
     return (
         <div className="app">
@@ -78,7 +49,7 @@ export default function App() {
                     onClickItem={handleClickItem}
                 />
             ) : null}
-            <div className="resizer" onMouseDown={handleMouseDown}></div>
+            <Resizer onResize={handleResize} />
             <main>
                 {rootDir ? (
                     <pre>
